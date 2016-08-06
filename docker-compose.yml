@@ -1,0 +1,36 @@
+cat <<EOF > docker-compose.yml
+version: '2'
+services:
+  db:
+    image: mariadb:latest
+    volumes:
+      - "/var/bilbo/db:/var/lib/mysql"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: wordpress
+      MYSQL_DATABASE: bilbo
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+
+  wpmod:
+    depends_on:
+      - db
+    #image: wordpress:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    links:
+      - db
+    ports:
+      - "8000:80"
+    restart: always
+    volumes:
+      - "/var/bilbo/www:/var/www/html"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_PASSWORD: wordpress
+      http_proxy: http://proxy.example.com:8080/
+      https_proxy: http://proxy.example.com:8080/
+      WP_HOME: http://kim.example.com/bilbo
+      WP_SITEURL: http://kim.example.com/bilbo
+EOF
